@@ -1,0 +1,28 @@
+{
+  "version": "2.0",
+  "extensions": {
+    "Swashbuckle": {
+        "Title": "Revolution Platform - User Service",
+        "Documents": [
+            {
+                "Name": "v1",
+                "Title": "Revolution Platform - User Service",
+                "Version": "v1",
+                "Description": "User Service."
+            }
+        ]
+    }
+  },
+  "logging": {
+    "fileLoggingMode": "debugOnly",
+    "logLevel": {
+      "default": "Information"
+    },
+    "applicationInsights": {
+      "sampling": {
+        "isEnabled": true,
+        "maxTelemetryItemsPerSecond": 5
+      }
+    }
+  }
+}

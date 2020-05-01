@@ -1,0 +1,18 @@
+# .dockerignore
+
+Dockerfile*
+docker-compose*
+
+.git
+.gitignore
+.vscode
+LICENSE
+README.md
+
+[b|B]in
+[O|o]bj
+
+local.settings.json
+Terraform
+
+*local.*

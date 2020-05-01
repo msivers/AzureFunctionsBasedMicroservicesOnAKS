@@ -1,0 +1,13 @@
+# General / RG
+res_prefix = "rp"
+environment = "prod"
+tag_env = "Production"
+tag_plat = "Revolution"
+primary_location = "westeurope"
+
+# AKS Cluster
+vm_size = "Standard_D2_v2"
+node_count = 1
+node_min_count = 1
+node_max_count = 5
+node_max_pods = 20

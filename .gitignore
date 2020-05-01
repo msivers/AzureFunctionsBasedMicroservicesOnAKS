@@ -1,0 +1,121 @@
+# Autosave files
+*~
+
+# build
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+x64/
+build/
+bld/
+[Oo]bj/
+[Bb]in/
+packages/
+TestResults/
+
+# globs
+Makefile.in
+*.DS_Store
+*.sln.cache
+*.suo
+*.cache
+*.pidb
+*.userprefs
+*.usertasks
+*.sln.docstates
+config.log
+config.make
+config.status
+aclocal.m4
+install-sh
+autom4te.cache/
+*.user
+*.tar.gz
+tarballs/
+test-results/
+Thumbs.db
+[Dd]esktop.ini
+
+# Mac bundle stuff
+*.dmg
+*.app
+
+# resharper
+*_Resharper.*
+*.Resharper
+
+# dotCover
+*.dotCover
+
+# MSTest test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+#NUNIT
+*.VisualState.xml
+TestResult.xml
+
+# C# / .NET / Xamarin
+*_i.c
+*_p.c
+*_i.h
+*.ilk
+*.meta
+*.obj
+*.pch
+*.pdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.tmp_proj
+*.log
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
+local.settings.json
+
+# Click-Once directory
+publish/
+
+# Publish Web Output
+*.[Pp]ublish.xml
+*.azurePubxml
+*.designer.cs
+packages/
+!packages/build/
+
+# Visual Studio / Visual Studio Code
+
+.vs/
+
+# Variation on folders begining with .VSCode* ... often used by various extensions.
+.[Vv][Ss][Cc]ode*/*
+
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+
+# Terraform
+
+.terraform
+*.tfstate
+*.tfstate.*
+*.local.tfvars
+
+
+# LOCAL FILES - ignore 'local' files with 'local.', .local. and '.local' in filename - often these will have sensitive data for local dev/test not wanted in source control
+
+local.*
+*.local.*
+*.local

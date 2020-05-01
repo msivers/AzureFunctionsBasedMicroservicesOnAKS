@@ -1,0 +1,163 @@
+replicaCount: 1
+
+image:
+  repository: 
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name:
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: azure/application-gateway
+    appgw.ingress.kubernetes.io/ssl-redirect: "true"
+  host: api.<domain>.com
+  tlsSecretName: api-services-tls
+
+env:
+  - name: "APPINSIGHTS_INSTRUMENTATIONKEY"
+    valueFrom:
+      secretKeyRef:
+        name: core
+        key: AppInsightsInstrumentationKey
+
+  - name: "AzureWebJobsStorage"
+    valueFrom:
+      secretKeyRef:
+        name: core
+        key: AzureWebJobStorage
+
+  - name: "FUNCTIONS_WORKER_RUNTIME"
+    value: "dotnet"
+
+  - name: "CosmosHost"
+    valueFrom:
+      secretKeyRef:
+        name: graph
+        key: CosmosHost
+
+  - name: "CosmosGremlinHost"
+    valueFrom:
+      secretKeyRef:
+        name: graph
+        key: CosmosGremlinHost
+
+  - name: "CosmosEndpoint"
+    valueFrom:
+      secretKeyRef:
+        name: graph
+        key: CosmosEndpoint
+
+  - name: "CosmosGremlinEndpoint"
+    valueFrom:
+      secretKeyRef:
+        name: graph
+        key: CosmosGremlinEndpoint
+
+  - name: "CosmosPort"
+    value: "443"
+
+  - name: "CosmosDatabaseName"
+    value: "SampleDB"
+
+  - name: "CosmosGraphName"
+    value: "SampleGraph"
+
+  - name: "CosmosKey"
+    valueFrom:
+      secretKeyRef:
+        name: graph
+        key: CosmosKey
+
+  - name: "CosmosConnectionString"
+    valueFrom:
+      secretKeyRef:
+        name: graph
+        key: CosmosConnectionString
+
+  - name: "B2CGraphApiTenant"
+    valueFrom:
+      secretKeyRef:
+        name: identity
+        key: B2CGraphApiTenant
+
+  - name: "B2CGraphApiClientId"
+    valueFrom:
+      secretKeyRef:
+        name: identity
+        key: B2CGraphApiClientId
+
+  - name: "B2CGraphApiClientSecret"
+    valueFrom:
+      secretKeyRef:
+        name: identity
+        key: B2CGraphApiClientSecret
+
+  - name: "B2CGraphApiExtensionsAppId"
+    valueFrom:
+      secretKeyRef:
+        name: identity
+        key: B2CGraphApiExtensionsAppId
+
+  - name: "AuthSigningKey"
+    valueFrom:
+      secretKeyRef:
+        name: auth
+        key: AuthSigningKey
+  
+  - name: "AuthAudience"
+    valueFrom:
+      secretKeyRef:
+        name: auth
+        key: AuthAudience
+
+  - name: "AuthIssuer"
+    valueFrom:
+      secretKeyRef:
+        name: auth
+        key: AuthIssuer
+
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # NOTE: These do however need to be defined if HPA is to work!
+  limits:
+    cpu: 250m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 64Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

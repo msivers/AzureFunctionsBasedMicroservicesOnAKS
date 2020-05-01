@@ -1,0 +1,130 @@
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
+pool:
+  name: Hosted Ubuntu 1604
+
+variables:
+- name: TFVarsFile
+  value: 'RP_UserService_Dev.tfvars'
+- group: AzureGlobal  
+- group: AzureEnvDev
+
+stages:
+
+- stage: Build
+  jobs:
+  - job: BuildJob
+    steps:
+
+    - task: Docker@2
+      displayName: 'Build & Push Docker Image'
+      inputs:
+        containerRegistry: RevPlatACRConnection
+        repository: 'revplat-services/rp-user-service'
+        Dockerfile: src/Services/UserService/Service/Dockerfile
+        tags: |
+          $(build.buildNumber)
+          latest
+
+    - task: HelmInstaller@1
+      displayName: 'Install Helm 3'
+      inputs:
+        helmVersionToInstall: 3.1.2
+
+    - task: HelmDeploy@0
+      displayName: 'Helm Package'
+      inputs:
+        connectionType: None
+        command: package
+        chartPath: 'src/Services/UserService/Service/rp-user-service'
+        chartVersion: '$(build.buildNumber)'
+        destination: '$(Build.ArtifactStagingDirectory)'
+        save: false
+
+    - bash: |
+        az login --service-principal --username $AZURE_CLIENT_ID --password $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+        az account set --subscription $AZURE_SUBSCRIPTION_ID
+        az acr helm push -n revolutionplatform $(Build.ArtifactStagingDirectory)/rp-user-service-$(build.buildNumber).tgz --username $AZURE_CLIENT_ID --password $AZURE_CLIENT_SECRET
+      displayName: 'Push Helm Chart to ACR'
+      env:
+        AZURE_CLIENT_SECRET: $(Azure_Client_Secret)    
+
+    - task: CopyFiles@2
+      displayName: 'Copy Terraform scripts to artifacts'
+      inputs:
+        SourceFolder: src/Services/UserService/DevOps/Terraform
+        Contents: '*.tf*'
+        TargetFolder: '$(build.artifactstagingdirectory)'
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: drop'
+      inputs:
+        pathToPublish: $(Build.ArtifactStagingDirectory)
+        artifactName: drop
+
+- stage: Deploy
+  jobs:
+
+  - deployment: DeployService
+    displayName: Deploy User Service
+    pool:
+      vmImage: 'Ubuntu-16.04'
+    # creates an environment if it doesn't exist
+    environment: 'Development'
+    strategy:
+      # default deployment strategy, more coming...
+      runOnce:
+        deploy:
+          steps:
+
+          - task: qetza.replacetokens.replacetokens-task.replacetokens@3
+            displayName: 'Replace tokens in terraform files'
+            inputs:
+              rootDirectory: '$(Agent.BuildDirectory)/drop'
+              targetFiles: |
+                **/*.tf
+                **/*.tfvars
+                # **/*.sh
+          
+          # - bash: 'chmod u+x *.sh'
+          #   workingDirectory: '$(Agent.BuildDirectory)/drop'
+          #   displayName: 'Prepare scripts for execution'
+          
+          - bash: 'terraform init -input=false -no-color'
+            workingDirectory: '$(Agent.BuildDirectory)/drop'
+            displayName: 'Terraform Init'
+
+          - bash: |
+              export TF_VAR_subscription_id=$AZURE_SUBSCRIPTION_ID
+              export TF_VAR_client_id=$AZURE_CLIENT_ID
+              export TF_VAR_client_secret=$AZURE_CLIENT_SECRET
+              export TF_VAR_tenant_id=$AZURE_TENANT_ID
+              
+              echo $TF_VAR_subscription_id
+              echo $TF_VAR_client_id
+              echo $TF_VAR_client_secret
+              echo $TF_VAR_tenant_id
+              
+              terraform plan -var-file=$(TFVarsFile) -var="chart=rp-user-service" -var="chart_version=$(build.buildNumber)" -var="image_tag=$(build.buildNumber)" -out=tfplan -input=false
+            workingDirectory: '$(Agent.BuildDirectory)/drop'
+            displayName: 'Terraform Plan'
+            env:
+              AZURE_CLIENT_SECRET: $(Azure_Client_Secret)
+
+          - bash: 'terraform apply -auto-approve tfplan'
+            workingDirectory: '$(Agent.BuildDirectory)/drop'
+            displayName: 'Terraform Apply'
+
+
+trigger:
+  branches:
+    include:
+    - master
+  paths:
+    include:
+    - src/Services/UserService/Service/
+    exclude:
+    - src/Services/UserService/Service/.dockerignore
+  tags:
+    exclude:
+    - nobuild

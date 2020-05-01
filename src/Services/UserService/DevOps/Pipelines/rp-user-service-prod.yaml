@@ -1,0 +1,83 @@
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
+pool:
+  name: Hosted Ubuntu 1604
+
+variables:
+- name: TFVarsFile
+  value: 'RP_UserService_Prod.tfvars'
+- group: AzureGlobal
+- group: AzureEnvProd
+
+stages:
+
+- stage: Build
+  jobs:
+  - job: BuildJob
+    steps:
+
+    - task: CopyFiles@2
+      displayName: 'Copy Terraform scripts to artifacts'
+      inputs:
+        SourceFolder: src/Services/UserService/DevOps/Terraform
+        Contents: '*.tf*'
+        TargetFolder: '$(build.artifactstagingdirectory)'
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: drop'
+      inputs:
+        pathToPublish: $(Build.ArtifactStagingDirectory)
+        artifactName: drop
+
+- stage: Deploy
+  jobs:
+
+  - deployment: DeployService
+    displayName: Deploy User Service
+    pool:
+      vmImage: 'Ubuntu-16.04'
+    # creates an environment if it doesn't exist
+    environment: 'Development'
+    strategy:
+      # default deployment strategy, more coming...
+      runOnce:
+        deploy:
+          steps:
+
+          - task: qetza.replacetokens.replacetokens-task.replacetokens@3
+            displayName: 'Replace tokens in terraform files'
+            inputs:
+              rootDirectory: '$(System.DefaultWorkingDirectory)/drop/'
+              targetFiles: |
+                **/*.tf
+                **/*.tfvars
+                # **/*.sh
+          
+          # - bash: 'chmod u+x *.sh'
+          #   workingDirectory: '$(System.DefaultWorkingDirectory)/drop/'
+          #   displayName: 'Prepare scripts for execution'
+          
+          - bash: 'terraform init -input=false -no-color'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/drop/'
+            displayName: 'Terraform Init'
+
+          - bash: |
+              export TF_VAR_subscription_id=$AZURE_SUBSCRIPTION_ID
+              export TF_VAR_client_id=$AZURE_CLIENT_ID
+              export TF_VAR_client_secret=$AZURE_CLIENT_SECRET
+              export TF_VAR_tenant_id=$AZURE_TENANT_ID
+              
+              echo $TF_VAR_subscription_id
+              echo $TF_VAR_client_id
+              echo $TF_VAR_client_secret
+              echo $TF_VAR_tenant_id
+              
+              terraform plan -var-file=$(TFVarsFile) -var="chart=rp-user-service" -var="image_tag=latest" -out=tfplan -input=false
+            workingDirectory: '$(System.DefaultWorkingDirectory)/drop/'
+            displayName: 'Terraform Plan'
+            env:
+              AZURE_CLIENT_SECRET: $(Azure_Client_Secret)
+
+          - bash: 'terraform apply -auto-approve tfplan'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/drop/'
+            displayName: 'Terraform Apply'

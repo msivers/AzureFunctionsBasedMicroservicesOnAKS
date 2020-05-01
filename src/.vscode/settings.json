@@ -1,0 +1,8 @@
+{
+    "azureFunctions.projectLanguage": "C#",
+    "azureFunctions.projectRuntime": "beta",
+    "VSCodeCounter.showInStatusBar": true,
+    "VSCodeCounter.useGitignore": true,
+    "VSCodeCounter.printNumberWithCommas": true,
+    "VSCodeCounter.ignoreUnsupportedFile": true
+}

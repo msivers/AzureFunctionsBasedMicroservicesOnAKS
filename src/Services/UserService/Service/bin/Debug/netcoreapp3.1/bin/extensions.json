@@ -1,0 +1,5 @@
+{
+  "extensions":[
+    { "name": "Startup", "typeName":"SampleServices.Services.UserService.Startup, UserService, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"}
+  ]
+}

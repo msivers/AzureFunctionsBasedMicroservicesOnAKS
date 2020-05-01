@@ -1,0 +1,30 @@
+
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AzureFunctionsVersion>v3</AzureFunctionsVersion>
+    <SkipFunctionsDepsCopy>true</SkipFunctionsDepsCopy>
+    <_FunctionsSkipCleanOutput>true</_FunctionsSkipCleanOutput> <!-- TODO: Fixes error with Functions and FunctionToken assembly -->
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="AzureExtensions.FunctionToken" Version="1.0.11" />
+    <PackageReference Include="AzureExtensions.Swashbuckle" Version="3.*" />
+    <PackageReference Include="Gremlin.Net" Version="3.*" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="3.*" />
+    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.*" />
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.*" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.*" />
+    <PackageReference Include="RevolutionPlatform.RPLHelpers" Version="*" />
+    <PackageReference Include="RevolutionPlatform.RPLCommon" Version="*" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.6.0"  />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="host.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="local.settings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+</Project>
